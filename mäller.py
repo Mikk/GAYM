@@ -1,10 +1,10 @@
-__author__ = 'Mikk'
-
 import pygame
 import random
 from constants import *
 
-
+all_sprites_list = pygame.sprite.Group()
+platform_sprites_list = pygame.sprite.Group()
+    
 class Block(pygame.sprite.Sprite):
     def __init__(self, x=0, y=0):
         super().__init__()
@@ -57,6 +57,9 @@ class Player(Character):
     def hüppa(self):
         ...
 
+    def mollingusse(self):
+        self.image = pygame.image.load(mollingusse_p)
+
     def liiguvasemale(self):
         self.rect.x -= self.kiirus
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
@@ -72,9 +75,12 @@ class Player(Character):
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
             self.rect.x -= self.kiirus
         else:
+            self.image = pygame.image.load(liigubparemale1)
+
             # X = self.rect.x
             # Y = self.rect.y
-            self.image = pygame.image.load(liigubparemale1)
+            #self.image = pygame.image.load(liigubparemale1)
+            #jooksebparemale.play()
             # self.rect = self.image.get_rect()
             # self.rect.x = X
             # self.rect.y = Y
@@ -104,53 +110,84 @@ class Player(Character):
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
             self.rect.y -= 10
 
-pygame.init()
+def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
+    font = pygame.font.Font(None, 100)
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    if x+laius > mouse[0] > x and y+kõrgus > mouse[1] > y:
+        pygame.draw.rect(gameDisplay, värv2, (x,y,laius,kõrgus))
+        if click[0] == 1 and action != None:
+            action()
+    else:
+        pygame.draw.rect(gameDisplay, värv1, (x,y,laius,kõrgus))
+    smallText = font.render(msg,1,black)
+##    textSurf, textRect = text_objects(msg, smallText) 
+##    textRect.center = ((x+(w/2)), (y+(h/2)))
+    gameDisplay.blit(smallText, (x, y+50))
+        
+def game_intro():
+    intro = True
+    pygame.event.pump()
+    key = pygame.key.get_pressed()
+    while intro:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        gameDisplay.blit(background, (0,0))
+        nupp("Start Game!",150,450,400,200,green,bright_green,game_loop)
+        nupp("Quit Game!",750,450,400,200,red,bright_red,quit)
+        pygame.display.update()
+        clock.tick(15)
+
+
 gameDisplay = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 
-background = pygame.image.load("background3.png").convert()
+background = pygame.image.load("background1.png").convert()
+clock = pygame.time.Clock()
 
 x = (DISPLAY_WIDTH * 0.25)
 y = (DISPLAY_HEIGHT * 0.5)
 
-pygame.display.set_caption("Maskantje")
-clock = pygame.time.Clock()
-crashed = False
+def game_loop():
+    pygame.display.set_caption("Maskantje")
+    crashed = False
 
-all_sprites_list = pygame.sprite.Group()
-platform_sprites_list = pygame.sprite.Group()
+    player = Player()
+    põrand = Platform(generate=True)
+    all_sprites_list.add(player, põrand.floortiles)
+    platform_sprites_list.add(põrand.floortiles)
+    player.rect.x = x
+    player.rect.y = y
+    
+    while not crashed:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                crashed = True
+        gameDisplay.blit(background, (0,0))
 
-player = Player()
-põrand = Platform(generate=True)
-all_sprites_list.add(player, põrand.floortiles)
-platform_sprites_list.add(põrand.floortiles)
-player.rect.x = x
-player.rect.y = y
+        pygame.event.pump()
+        key = pygame.key.get_pressed()
+        if key[pygame.K_UP]:
+            player.liiguülesse()
+        if key[pygame.K_DOWN]:
+            player.liigualla()
+        if key[pygame.K_LEFT]:
+            player.liiguvasemale()
+        if key[pygame.K_RIGHT]:
+            player.liiguparemale()
 
-while not crashed:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        player.dogravity()
+
+        if key[pygame.K_ESCAPE]:
             crashed = True
-    gameDisplay.blit(background, (0,0))
 
-    pygame.event.pump()
-    key = pygame.key.get_pressed()
-    if key[pygame.K_UP]:
-        player.liiguülesse()
-    if key[pygame.K_DOWN]:
-        player.liigualla()
-    if key[pygame.K_LEFT]:
-        player.liiguvasemale()
-    if key[pygame.K_RIGHT]:
-        player.liiguparemale()
-
-    player.dogravity()
-
-    if key[pygame.K_ESCAPE]:
-        crashed = True
-
-    all_sprites_list.draw(gameDisplay)
-    pygame.display.update()
-    clock.tick(30)
-
+        all_sprites_list.draw(gameDisplay)
+        pygame.display.update()
+        clock.tick(30)
+        
+pygame.init()
+game_intro()
 pygame.quit()
 quit()
