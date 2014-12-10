@@ -7,7 +7,7 @@ BLACK = (0,0,0)
 WHITE = (255,255,255)
 RED   = (255,0,0)
 
-## IMAGES
+## Mehike
 liigubvasemale1 = "jookseb_vasakule_1.png"
 liigubvasemale2 = "jookseb_vasakule_2.png"
 liigubparemale1 = "jookseb_paremale_1.png"
@@ -18,6 +18,8 @@ seisab = "seisab.png"
 
 ##tiles and stuff
 gray_brick = "block64.png"
+grass_block = "texture_grass1.jpg"
+grass_block_ground = "texture_grass2.jpg"
 
 
 #platvormi võimalikud pealmised ruudud

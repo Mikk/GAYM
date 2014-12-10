@@ -35,7 +35,7 @@ class Block(pygame.sprite.Sprite):
         # image.
         # Update the position of this object by setting the values
         # of rect.x and rect.y
-        self.rect = self.image.get_rect()
+         self.rect = self.image.get_rect()
 
 # Initialize Pygame
 pygame.init()

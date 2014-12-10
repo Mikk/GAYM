@@ -55,7 +55,7 @@ class Player(Character):
         self.rect = self.image.get_rect()
 
     def hüppa(self):
-
+        ...
 
     def liiguvasemale(self):
         self.rect.x -= self.kiirus
@@ -107,7 +107,7 @@ class Player(Character):
 pygame.init()
 gameDisplay = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 
-background = pygame.image.load("screenshot03.jpg").convert()
+background = pygame.image.load("background3.png").convert()
 
 x = (DISPLAY_WIDTH * 0.25)
 y = (DISPLAY_HEIGHT * 0.5)
