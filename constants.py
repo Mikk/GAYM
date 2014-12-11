@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+
 
 #VARIABLES
 DISPLAY_WIDTH = 1280
@@ -34,10 +33,17 @@ liigubparemale2 = "jookseb_paremale_2.png"
 liigubparemale3 = "jookseb_paremale_3.png"   
 hyppabparemale = "hyppab_paremale.png"
 hyppabvasakule = "hyppab_vasakule.png"
-mollingusse_p = "mollingusse_paremale.png"
-mollingusse_v = "mollingusse_vasakule.png"
-jalaga_p = "jalaga_paremalt.png"
-jalaga_v = "jalaga_vasakult.png"
+mollingusse_paremale1 = "mollingusse_paremale1.png"
+mollingusse_paremale2 = "mollingusse_paremale2.png"
+mollingusse_paremale3 = "mollingusse_paremale3.png"
+mollingusse_vasakule1 = "mollingusse_vasakule1.png"
+mollingusse_vasakule2 = "mollingusse_vasakule2.png"
+mollingusse_vasakule3 = "mollingusse_vasakule3.png"
+mollingusse_paremale = [mollingusse_paremale1, mollingusse_paremale2, mollingusse_paremale3]
+mollingusse_vasakule = [mollingusse_vasakule1, mollingusse_vasakule2, mollingusse_vasakule3]
+mollingusse = {"RIGHT": mollingusse_paremale, "LEFT": mollingusse_vasakule}
+jalaga_mollingusse_paremale = "jalaga_paremalt.png"
+jalaga_mollingusse_vasakule = "jalaga_vasakult.png"
 mehike_liigub_vasemale = [liigubvasemale1, liigubvasemale2, liigubvasemale3]
 mehike_liigub_paremale = [liigubparemale1, liigubparemale2, liigubparemale3]
 mehike_hyppab_paremale = [hyppabparemale]
@@ -51,6 +57,10 @@ beebiparemale3 = "beebi_paremale3.png"
 beebivasemale1 = "beebi_vasakule1.png"
 beebivasemale2 = "beebi_vasakule2.png"
 beebivasemale3 = "beebi_vasakule3.png"
+beebi_seisab = [beebivasemale2]
+beebi_liigub_paremale = [beebiparemale1, beebiparemale2, beebiparemale3]
+beebi_liigub_vasakule = [beebivasemale1, beebivasemale2, beebivasemale3]
+beebi_jookseb = {LEFT: beebi_liigub_vasakule, RIGHT: beebi_liigub_paremale, UP: beebi_seisab, DOWN: beebi_seisab}
 tulnukasparemale1 = "tulnukas_paremale1.png"
 tulnukasparemale2 = "tulnukas_paremale2.png"
 tulnukasparemale3 = "tulnukas_paremale3.png"

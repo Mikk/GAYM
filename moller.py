@@ -8,6 +8,11 @@ from pygame.locals import *
 all_sprites_list = pygame.sprite.Group()
 platform_sprites_list = pygame.sprite.Group()
 
+## ABIFUNKTSIOONID
+
+def loadImage(imagepath):
+    return pygame.image.load(imagepath)
+
 class Block(pygame.sprite.Sprite):
     def __init__(self, x=0, y=0):
         super().__init__()
@@ -47,11 +52,12 @@ class Character(pygame.sprite.Sprite):
     seismine_tekstuurid = []
     ###################
     isJumping = False
+    isPunching = False
     jumpingTimer = pygame.time.get_ticks()
     direction = UP
     animationClock = pygame.time.Clock()
     animationTimer = animationClock.get_time()
-    imageType = 1 # either 1, 2 or 3
+    imageType = 0 # either 0, 1 or 2
 
     kiirus = 10
     liikumine = [0,0]
@@ -59,6 +65,8 @@ class Character(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.animationClock.tick()
+
+    ###LIIKUMINE
 
     def dogravity(self):
         self.rect.y += GRAVITY
@@ -78,18 +86,42 @@ class Character(pygame.sprite.Sprite):
         self.liikumine[1] += self.kiirus
         self.direction = DOWN
 
+    def liigu(self):
+        x, y = self.liikumine[0], self.liikumine[1]
+        self.rect.x += x
+        self.rect.y += y
+        if(x == 0 and y == 0):
+            self.direction = DOWN
+    def hyppa(self):
+        if self.isJumping == False:
+            self.jumpingTimer = pygame.time.get_ticks()
+            self.isJumping = True
+
+    def check_hyppamine(self):
+        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
+            self.liiguülesse()
+
     ###ANIMATION RELATED
     def assignImage(self, direction):
         if self.isJumping:
-            image = self.getImage(self.hyppamine_tekstuurid[direction])
+            image = loadImage(self.getImage(self.hyppamine_tekstuurid[direction]))
+            if self.isPunching:
+                if direction == RIGHT:
+                    image = loadImage(jalaga_mollingusse_paremale)
+                elif direction == LEFT:
+                    image = loadImage(jalaga_mollingusse_vasakule)
         elif not self.isJumping:
-            image = self.getImage(self.jooks_tekstuurid[direction])
-        self.image = pygame.image.load(image)
+            image = loadImage(self.getImage(self.jooks_tekstuurid[direction]))
+            if self.isPunching:
+                if direction == RIGHT:
+                    image = loadImage(self.getImage(mollingusse[direction]))
+                if direction == LEFT:
+                    image = loadImage(self.getImage(mollingusse[direction]))
+        self.image = image
 
     def getImage(self, image_list):
         imageType = self.imageType
         print(imageType)
-
         while len(image_list) <= imageType:
             imageType -= 1
         print(image_list, image_list[imageType])
@@ -106,6 +138,8 @@ class Character(pygame.sprite.Sprite):
         if(self.animationTimer > 360):
             self.animationTimer = 0
 
+    def peksmine(self):
+        self.isPunching = True
     #####################
 
     def check_collision(self):
@@ -115,27 +149,6 @@ class Character(pygame.sprite.Sprite):
             self.liigu()
         self.liikumine[0], self.liikumine[1] = 0, 0
 
-
-    def liigu(self):
-        #print("liigu", self.liikumine[0], self.liikumine[1])w
-        x, y = self.liikumine[0], self.liikumine[1]
-        self.rect.x += x
-        self.rect.y += y
-        if(x == 0 and y == 0):
-            self.direction = DOWN
-    def hyppa(self):
-        if self.isJumping == False:
-            self.jumpingTimer = pygame.time.get_ticks()
-            self.isJumping = True
-
-    def check_hyppamine(self):
-        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
-            self.liiguülesse()
-        # elif pygame.time.get_ticks() - self.jumpingTimer<= 1000 and self.isJumping:
-        #     pass
-        # else:
-        #     self.isJumping = False
-
     def update(self):
         self.updateAnimationType()
         self.liigu()
@@ -143,7 +156,7 @@ class Character(pygame.sprite.Sprite):
         self.check_hyppamine()
         self.dogravity()
         self.assignImage(self.direction)
-
+        self.isPunching = False
 
 class Player(Character):
 
@@ -157,9 +170,6 @@ class Player(Character):
         self.jooks_tekstuurid = mehike_jookseb
         self.hyppamine_tekstuurid = mehike_hyppab
         self.seismine_tekstuurid = mehike_seisab
-
-    def löömine(self):
-        ...
 
 
 def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
