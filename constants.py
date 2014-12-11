@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 #VARIABLES
 DISPLAY_WIDTH = 1280
 DISPLAY_HEIGHT = 720
@@ -11,6 +14,13 @@ black = (0,0,0)
 bright_green = (0,255,0)
 bright_red = (255,0,0)
 
+
+## DIRECTIONS
+UP = "UP"
+DOWN = "DOWN"
+LEFT = "LEFT"
+RIGHT = "RIGHT"
+
 ## GAME DATA VARIABLES
 GRAVITY = 10
 
@@ -22,12 +32,19 @@ liigubvasemale3 = "jookseb_vasakule_3.png"
 liigubparemale1 = "jookseb_paremale_1.png"
 liigubparemale2 = "jookseb_paremale_2.png"
 liigubparemale3 = "jookseb_paremale_3.png"   
-hüppabparemale1 = "hüppab_paremale_1.png"
-hüppabvasakule1 = "hüppab_vasakule_1.png"
+hyppabparemale = "hyppab_paremale.png"
+hyppabvasakule = "hyppab_vasakule.png"
 mollingusse_p = "mollingusse_paremale.png"
 mollingusse_v = "mollingusse_vasakule.png"
 jalaga_p = "jalaga_paremalt.png"
 jalaga_v = "jalaga_vasakult.png"
+mehike_liigub_vasemale = [liigubvasemale1, liigubvasemale2, liigubvasemale3]
+mehike_liigub_paremale = [liigubparemale1, liigubparemale2, liigubparemale3]
+mehike_hyppab_paremale = [hyppabparemale]
+mehike_hyppab_vasemale = [hyppabvasakule]
+mehike_seisab = [seisab]
+mehike_jookseb = {"LEFT": mehike_liigub_vasemale, "RIGHT": mehike_liigub_paremale, "DOWN": mehike_seisab, "UP": mehike_seisab}
+mehike_hyppab = {"LEFT": mehike_hyppab_vasemale, "RIGHT": mehike_hyppab_paremale, "DOWN": mehike_seisab, "UP": mehike_seisab}
 beebiparemale1 = "beebi_paremale1.png"
 beebiparemale2 = "beebi_paremale2.png"
 beebiparemale3 = "beebi_paremale3.png"

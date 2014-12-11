@@ -1,8 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import random
 from constants import *
 import pygame
 from pygame.locals import *
-
 all_sprites_list = pygame.sprite.Group()
 platform_sprites_list = pygame.sprite.Group()
     
@@ -39,32 +41,72 @@ class Platform(Block):
                 self.floortiles.append(tile)
 
 class Character(pygame.sprite.Sprite):
+    ## Textures go here
+    jooks_tekstuurid = []
+    hyppamine_tekstuurid = []
+    seismine_tekstuurid = []
+    ###################
+    isJumping = False
+    jumpingTimer = pygame.time.get_ticks()
+    direction = UP
+    animationClock = pygame.time.Clock()
+    animationTimer = animationClock.get_time()
+    imageType = 1 # either 1, 2 or 3
+
     kiirus = 10
     liikumine = [0,0]
 
     def __init__(self):
         super().__init__()
+        self.animationClock.tick()
 
     def dogravity(self):
         self.rect.y += GRAVITY
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
             self.rect.y -= GRAVITY
-
+            self.isJumping = False # to stop jump when collision
 
     def liiguvasemale(self):
         self.liikumine[0] += -self.kiirus
-        if self.rect.x < 0:
-            self.rect.x += self.kiirus
-        self.image = pygame.image.load(liigubvasemale1)
+        self.direction = LEFT
     def liiguparemale(self):
         self.liikumine[0] += self.kiirus
-        self.image = pygame.image.load(liigubparemale1)
+        self.direction = RIGHT
     def liiguülesse(self):
         self.liikumine[1] -= self.kiirus*2
-        self.image = pygame.image.load(seisab)
     def liigualla(self):
-        self.liikumine[1] += -self.kiirus
-        self.image = pygame.image.load(seisab)
+        self.liikumine[1] += self.kiirus
+        self.direction = DOWN
+
+    ###ANIMATION RELATED
+    def assignImage(self, direction):
+        if self.isJumping:
+            image = self.getImage(self.hyppamine_tekstuurid[direction])
+        elif not self.isJumping:
+            image = self.getImage(self.jooks_tekstuurid[direction])
+        self.image = pygame.image.load(image)
+
+    def getImage(self, image_list):
+        imageType = self.imageType
+        print(imageType)
+
+        while len(image_list) <= imageType:
+            imageType -= 1
+        print(image_list, image_list[imageType])
+        return image_list[imageType]
+
+    def updateAnimationType(self):
+        self.animationTimer += self.animationClock.tick()
+        if(self.animationTimer <= 120):
+            self.imageType = 0
+        elif(self.animationTimer <= 240):
+            self.imageType = 1
+        elif(self.animationTimer <= 360):
+            self.imageType = 2
+        if(self.animationTimer > 360):
+            self.animationTimer = 0
+
+    #####################
 
     def check_collision(self):
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
@@ -73,23 +115,37 @@ class Character(pygame.sprite.Sprite):
             self.liigu()
         self.liikumine[0], self.liikumine[1] = 0, 0
 
+
     def liigu(self):
-        print("liigu", self.liikumine[0], self.liikumine[1])
+        #print("liigu", self.liikumine[0], self.liikumine[1])w
         x, y = self.liikumine[0], self.liikumine[1]
         self.rect.x += x
         self.rect.y += y
+        if(x == 0 and y == 0):
+            self.direction = DOWN
+    def hyppa(self):
+        if self.isJumping == False:
+            self.jumpingTimer = pygame.time.get_ticks()
+            self.isJumping = True
+
+    def check_hyppamine(self):
+        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
+            self.liiguülesse()
+        # elif pygame.time.get_ticks() - self.jumpingTimer<= 1000 and self.isJumping:
+        #     pass
+        # else:
+        #     self.isJumping = False
 
     def update(self):
+        self.updateAnimationType()
         self.liigu()
         self.check_collision()
-        self.check_hüppamine()
+        self.check_hyppamine()
         self.dogravity()
+        self.assignImage(self.direction)
+
 
 class Player(Character):
-
-
-    isJumping = False
-    jumpingTimer = pygame.time.get_ticks()
 
     def __init__(self):
         super().__init__()
@@ -97,18 +153,13 @@ class Player(Character):
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
 
-    def hüppa(self):
-        if self.isJumping == False:
-            self.jumpingTimer = pygame.time.get_ticks()
-            self.isJumping = True
+        ## laeb mehikese tekstuurid
+        self.jooks_tekstuurid = mehike_jookseb
+        self.hyppamine_tekstuurid = mehike_hyppab
+        self.seismine_tekstuurid = mehike_seisab
 
-    def check_hüppamine(self):
-        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
-            self.liiguülesse()
-        else:
-            self.isJumping = False
-
-
+    def löömine(self):
+        ...
 
 
 def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
@@ -142,7 +193,6 @@ def game_intro():
         pygame.display.update()
         clock.tick(15)
 
-
 gameDisplay = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 
 background = pygame.image.load("background1.png").convert()
@@ -172,13 +222,15 @@ def game_loop():
         pygame.event.pump()
         key = pygame.key.get_pressed()
         if key[K_UP]:
-            player.hüppa()
+            player.hyppa()
         if key[K_DOWN]:
             player.liigualla()
         if key[K_LEFT]:
             player.liiguvasemale()
         if key[K_RIGHT]:
             player.liiguparemale()
+        if key[K_SPACE]:
+            player.peksmine()
 
         player.update()
         all_sprites_list.draw(gameDisplay)
