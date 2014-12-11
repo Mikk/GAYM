@@ -74,6 +74,8 @@ class Player(Character):
 
     def liiguvasemale(self):
         self.liikumine[0] += -self.kiirus
+        if self.rect.x < 0:
+            self.rect.x += self.kiirus
         self.image = pygame.image.load(liigubvasemale1)
     def liiguparemale(self):
         self.liikumine[0] += self.kiirus
