@@ -76,6 +76,8 @@ class Character(pygame.sprite.Sprite):
 
     def liiguvasemale(self):
         self.liikumine[0] += -self.kiirus
+        if self.rect.x < 0:
+            self.liikumine[0] += self.kiirus
         self.direction = LEFT
     def liiguparemale(self):
         self.liikumine[0] += self.kiirus
@@ -200,22 +202,33 @@ def skooritabel(msg,x,y,laius,kõrgus,värv):
     text = font.render(msg,1,black)
     gameDisplay.blit(text, (x, y))
 
-def game_over():
-    font = pygame.font.Font(None, 280)
-    text = font.render("Game Over",1,black)
-    gameDisplay.blit(text, (100, 200))
-    pygame.sprite.Group().clear(gameDisplay, background)
-    game_intro()
-    
 def clear_callback(surf, rect):
     color = 255, 0, 0
     surf.fill(color, rect)
-    
+
+
+def game_over():
+    font = pygame.font.Font(None, 280)
+    text = font.render("Game Over",1,black)
+    game_over = True
+    while game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        gameDisplay.blit(background, (0,0))
+        gameDisplay.blit(text, (100, 200))
+   # pygame.display.update()
+  #  pygame.sprite.Group().clear(gameDisplay, background)
+        nupp("Play again",150,450,350,200,green,bright_green,game_loop)
+        nupp("Quit Game!",750,450,400,200,red,bright_red,quit)
+        pygame.display.update()
+        clock.tick(15)
+        
 def game_intro():
+    background = pygame.image.load("background2.png").convert()
     pygame.mixer.music.set_volume(0.5)
     intro = True
-    pygame.event.pump()
-    key = pygame.key.get_pressed()
     while intro:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -264,6 +277,7 @@ def game_loop():
             player.hyppa()
         if key[K_DOWN]:
             player.liigualla()
+            #all_sprites_list.clear()
         if key[K_LEFT]:
             player.liiguvasemale()
         if key[K_RIGHT]:
