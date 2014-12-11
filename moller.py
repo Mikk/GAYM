@@ -39,32 +39,11 @@ class Platform(Block):
                 self.floortiles.append(tile)
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-
-class Player(Character):
     kiirus = 10
     liikumine = [0,0]
 
-    isJumping = False
-    jumpingTimer = pygame.time.get_ticks()
-
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load(liigubparemale1).convert_alpha()
-        self.image.set_colorkey(WHITE)
-        self.rect = self.image.get_rect()
-
-    def hüppa(self):
-        if self.isJumping == False:
-            self.jumpingTimer = pygame.time.get_ticks()
-            self.isJumping = True
-
-    def check_hüppamine(self):
-        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
-            self.liiguülesse()
-        else:
-            self.isJumping = False
 
     def dogravity(self):
         self.rect.y += GRAVITY
@@ -105,6 +84,31 @@ class Player(Character):
         self.check_collision()
         self.check_hüppamine()
         self.dogravity()
+
+class Player(Character):
+
+
+    isJumping = False
+    jumpingTimer = pygame.time.get_ticks()
+
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load(liigubparemale1).convert_alpha()
+        self.image.set_colorkey(WHITE)
+        self.rect = self.image.get_rect()
+
+    def hüppa(self):
+        if self.isJumping == False:
+            self.jumpingTimer = pygame.time.get_ticks()
+            self.isJumping = True
+
+    def check_hüppamine(self):
+        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
+            self.liiguülesse()
+        else:
+            self.isJumping = False
+
+
 
 
 def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
