@@ -64,6 +64,8 @@ class Player(Character):
         self.rect.x -= self.kiirus
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
             self.rect.x += self.kiirus
+        elif self.rect.x < 0:
+            self.rect.x += self.kiirus
         else:
             # X = self.rect.x
             # Y = self.rect.y
@@ -88,6 +90,8 @@ class Player(Character):
         self.rect.y -= self.kiirus*2
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
             self.rect.y += self.kiirus
+        elif self.rect.y < 0:
+            self.rect.x += self.kiirus
         else:
             # X, Y = self.rect.x, self.rect.y
             self.image = pygame.image.load(seisab)
@@ -146,12 +150,12 @@ gameDisplay = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 
 background = pygame.image.load("background1.png").convert()
 clock = pygame.time.Clock()
+pygame.display.set_caption("Maskantje")
 
 x = (DISPLAY_WIDTH * 0.25)
 y = (DISPLAY_HEIGHT * 0.5)
 
 def game_loop():
-    pygame.display.set_caption("Maskantje")
     crashed = False
 
     player = Player()
