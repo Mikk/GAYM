@@ -187,18 +187,22 @@ def skoori_number(score):
     
 def skooritabel(msg,x,y,laius,kõrgus,värv):
     font = pygame.font.Font(None, 40)
-    #pygame.draw.rect(gameDisplay, värv, (x,y,laius,kõrgus))
     text = font.render(msg,1,black)
     gameDisplay.blit(text, (x, y))
 
 def game_over():
     font = pygame.font.Font(None, 280)
-    #pygame.draw.rect(gameDisplay, värv, (x,y,laius,kõrgus))
     text = font.render("Game Over",1,black)
     gameDisplay.blit(text, (100, 200))
+    pygame.sprite.Group().clear(gameDisplay, background)
     game_intro()
     
+def clear_callback(surf, rect):
+    color = 255, 0, 0
+    surf.fill(color, rect)
+    
 def game_intro():
+    pygame.mixer.music.set_volume(0.5)
     intro = True
     pygame.event.pump()
     key = pygame.key.get_pressed()
@@ -223,6 +227,7 @@ x = (DISPLAY_WIDTH * 0.25)
 y = (DISPLAY_HEIGHT * 0.5)
 
 def game_loop():
+    pygame.mixer.music.set_volume(0.1)
     score = 0
     pygame.display.set_caption("Maskantje")
     game = True
