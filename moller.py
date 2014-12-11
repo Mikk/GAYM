@@ -7,7 +7,7 @@ import pygame
 from pygame.locals import *
 all_sprites_list = pygame.sprite.Group()
 platform_sprites_list = pygame.sprite.Group()
-    
+
 class Block(pygame.sprite.Sprite):
     def __init__(self, x=0, y=0):
         super().__init__()
@@ -236,8 +236,12 @@ def game_loop():
         all_sprites_list.draw(gameDisplay)
         pygame.display.update()
         clock.tick(30)
-        
+
 pygame.init()
+#Muusika
+pygame.mixer.music.load("Storm, Earth and Fire.mp3")
+pygame.mixer.music.play(-1,0.0)        
+#Intro screen
 game_intro()
 pygame.quit()
 quit()
