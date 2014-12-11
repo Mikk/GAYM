@@ -176,7 +176,28 @@ def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
 ##    textSurf, textRect = text_objects(msg, smallText) 
 ##    textRect.center = ((x+(w/2)), (y+(h/2)))
     gameDisplay.blit(smallText, (x, y+50))
-        
+
+def skoori_number(score):
+    font = pygame.font.Font(None, 40)
+    pygame.event.pump()
+    key = pygame.key.get_pressed()
+    score = str(score)
+    score_text = font.render(score,1,black)
+    gameDisplay.blit(score_text, (90, 0))
+    
+def skooritabel(msg,x,y,laius,kõrgus,värv):
+    font = pygame.font.Font(None, 40)
+    #pygame.draw.rect(gameDisplay, värv, (x,y,laius,kõrgus))
+    text = font.render(msg,1,black)
+    gameDisplay.blit(text, (x, y))
+
+def game_over():
+    font = pygame.font.Font(None, 280)
+    #pygame.draw.rect(gameDisplay, värv, (x,y,laius,kõrgus))
+    text = font.render("Game Over",1,black)
+    gameDisplay.blit(text, (100, 200))
+    game_intro()
+    
 def game_intro():
     intro = True
     pygame.event.pump()
@@ -202,6 +223,7 @@ x = (DISPLAY_WIDTH * 0.25)
 y = (DISPLAY_HEIGHT * 0.5)
 
 def game_loop():
+    score = 0
     pygame.display.set_caption("Maskantje")
     game = True
 
@@ -215,6 +237,8 @@ def game_loop():
     pygame.key.set_repeat()
     while game:
         gameDisplay.blit(background, (0,0))
+        skooritabel("Score:",0,0,100,20,black)
+        skoori_number(score)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game = False
