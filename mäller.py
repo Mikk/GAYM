@@ -1,6 +1,7 @@
-import pygame
 import random
 from constants import *
+import pygame
+from pygame.locals import *
 
 all_sprites_list = pygame.sprite.Group()
 platform_sprites_list = pygame.sprite.Group()
@@ -42,11 +43,11 @@ class Character(pygame.sprite.Sprite):
         super().__init__()
 
 class Player(Character):
-    #pilt_liigubvasemale = []
-    #pilt_liigubparemale = []
-    #pilt_hüppabvasemale = []
-    #pilt_hüppabparemale = []
     kiirus = 10
+    liikumine = [0,0]
+
+    isJumping = False
+    jumpingTimer = pygame.time.get_ticks()
 
     def __init__(self):
         super().__init__()
@@ -55,60 +56,54 @@ class Player(Character):
         self.rect = self.image.get_rect()
 
     def hüppa(self):
-        ...
+        if self.isJumping == False:
+            self.jumpingTimer = pygame.time.get_ticks()
+            self.isJumping = True
 
-    def mollingusse(self):
-        self.image = pygame.image.load(mollingusse_p)
-
-    def liiguvasemale(self):
-        self.rect.x -= self.kiirus
-        if pygame.sprite.spritecollide(self, platform_sprites_list, False):
-            self.rect.x += self.kiirus
+    def check_hüppamine(self):
+        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
+            self.liiguülesse()
         else:
-            # X = self.rect.x
-            # Y = self.rect.y
-            self.image = pygame.image.load(liigubvasemale1)
-            # self.rect.x = X
-            # self.rect.y = Y
-    def liiguparemale(self):
-        self.rect.x += self.kiirus
-        if pygame.sprite.spritecollide(self, platform_sprites_list, False):
-            self.rect.x -= self.kiirus
-        else:
-            self.image = pygame.image.load(liigubparemale1)
-
-            # X = self.rect.x
-            # Y = self.rect.y
-            #self.image = pygame.image.load(liigubparemale1)
-            #jooksebparemale.play()
-            # self.rect = self.image.get_rect()
-            # self.rect.x = X
-            # self.rect.y = Y
-    def liiguülesse(self):
-        self.rect.y -= self.kiirus*2
-        if pygame.sprite.spritecollide(self, platform_sprites_list, False):
-            self.rect.y += self.kiirus
-        else:
-            # X, Y = self.rect.x, self.rect.y
-            self.image = pygame.image.load(seisab)
-            # self.rect = self.image.get_rect()
-            # # self.rect.x = X
-            # self.rect.y = Y
-    def liigualla(self):
-        self.rect.y += self.kiirus
-        if pygame.sprite.spritecollide(self, platform_sprites_list, False):
-            self.rect.y -= self.kiirus
-        else:
-            # X, Y = self.rect.x, self.rect.y
-            self.image = pygame.image.load(seisab)
-            # self.rect = self.image.get_rect()
-            # self.rect.x = X
-            # self.rect.y = Y
+            self.isJumping = False
 
     def dogravity(self):
-        self.rect.y += 10
+        self.rect.y += GRAVITY
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
-            self.rect.y -= 10
+            self.rect.y -= GRAVITY
+
+
+    def liiguvasemale(self):
+        self.liikumine[0] += -self.kiirus
+        self.image = pygame.image.load(liigubvasemale1)
+    def liiguparemale(self):
+        self.liikumine[0] += self.kiirus
+        self.image = pygame.image.load(liigubparemale1)
+    def liiguülesse(self):
+        self.liikumine[1] -= self.kiirus*2
+        self.image = pygame.image.load(seisab)
+    def liigualla(self):
+        self.liikumine[1] += -self.kiirus
+        self.image = pygame.image.load(seisab)
+
+    def check_collision(self):
+        if pygame.sprite.spritecollide(self, platform_sprites_list, False):
+            self.liikumine[0] = -self.liikumine[0]
+            self.liikumine[1] = -self.liikumine[1]
+            self.liigu()
+        self.liikumine[0], self.liikumine[1] = 0, 0
+
+    def liigu(self):
+        print("liigu", self.liikumine[0], self.liikumine[1])
+        x, y = self.liikumine[0], self.liikumine[1]
+        self.rect.x += x
+        self.rect.y += y
+
+    def update(self):
+        self.liigu()
+        self.check_collision()
+        self.check_hüppamine()
+        self.dogravity()
+
 
 def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
     font = pygame.font.Font(None, 100)
@@ -152,7 +147,7 @@ y = (DISPLAY_HEIGHT * 0.5)
 
 def game_loop():
     pygame.display.set_caption("Maskantje")
-    crashed = False
+    game = True
 
     player = Player()
     põrand = Platform(generate=True)
@@ -160,29 +155,26 @@ def game_loop():
     platform_sprites_list.add(põrand.floortiles)
     player.rect.x = x
     player.rect.y = y
-    
-    while not crashed:
+
+    pygame.key.set_repeat()
+    while game:
+        gameDisplay.blit(background, (0,0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                crashed = True
-        gameDisplay.blit(background, (0,0))
+                game = False
 
         pygame.event.pump()
         key = pygame.key.get_pressed()
-        if key[pygame.K_UP]:
-            player.liiguülesse()
-        if key[pygame.K_DOWN]:
+        if key[K_UP]:
+            player.hüppa()
+        if key[K_DOWN]:
             player.liigualla()
-        if key[pygame.K_LEFT]:
+        if key[K_LEFT]:
             player.liiguvasemale()
-        if key[pygame.K_RIGHT]:
+        if key[K_RIGHT]:
             player.liiguparemale()
 
-        player.dogravity()
-
-        if key[pygame.K_ESCAPE]:
-            crashed = True
-
+        player.update()
         all_sprites_list.draw(gameDisplay)
         pygame.display.update()
         clock.tick(30)

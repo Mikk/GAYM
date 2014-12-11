@@ -1,3 +1,4 @@
+#VARIABLES
 DISPLAY_WIDTH = 1280
 DISPLAY_HEIGHT = 720
 
@@ -9,6 +10,9 @@ white = (255,255,255)
 black = (0,0,0)
 bright_green = (0,255,0)
 bright_red = (255,0,0)
+
+## GAME DATA VARIABLES
+GRAVITY = 10
 
 ## IMAGES
 seisab = "seisab.png"
