@@ -6,9 +6,9 @@ from constants import *
 import pygame
 from pygame.locals import *
 all_sprites_list = pygame.sprite.Group()
-character_sprites_list = pygame.sprite.Group()
+enemies_sprites_list = pygame.sprite.Group()
 platform_sprites_list = pygame.sprite.Group()
-
+score = 0
 
 ## ABIFUNKTSIOONID
 
@@ -32,8 +32,8 @@ class Platform(Block):
             self.generate()
     def generate(self):
         self.generate_floor()
-        self.generate_on_floor(5)
-    def generate_floor(self, x=0, y=DISPLAY_HEIGHT):
+        self.generate_on_platform(5)
+    def generate_platform(self, x=0, y=DISPLAY_HEIGHT):
         for i in range(int(x), int(DISPLAY_WIDTH), self.image.get_size()[0]):
             tile = Block(x=i, y= y - self.image.get_size()[1])
             self.floortiles.append(tile)
@@ -160,6 +160,7 @@ class Character(pygame.sprite.Sprite):
             self.liigu()
         self.liikumine[0], self.liikumine[1] = 0, 0
 
+
     def update(self):
         self.updateAnimationType()
         self.check_hyppamine()
@@ -210,6 +211,12 @@ class Titt(AI):
         self.seismine_tekstuurid = beebi_seisab
 
         self.animationLength = 10
+    def check_collision(self):
+        if pygame.sprite.spritecollide(self, platform_sprites_list, False):
+            self.liikumine[0] = -self.liikumine[0]
+            self.liikumine[1] = -self.liikumine[1]
+            self.liigu()
+        self.liikumine[0], self.liikumine[1] = 0, 0
 
     def update(self, playerobj):
         self.setLiikumine(self.getMovement(self.getPlayerPos(playerobj)))
@@ -233,6 +240,19 @@ class Player(Character):
         self.jooks_tekstuurid = mehike_jookseb
         self.hyppamine_tekstuurid = mehike_hyppab
         self.seismine_tekstuurid = mehike_seisab
+
+    def check_collision(self):
+        if pygame.sprite.spritecollide(self, platform_sprites_list, False):
+            self.liikumine[0] = -self.liikumine[0]
+            self.liikumine[1] = -self.liikumine[1]
+            self.liigu()
+        if pygame.sprite.spritecollide(self, enemies_sprites_list, False):
+            if not self.isPunching:
+                game_over()
+            if self.isPunching:
+                global score
+                score += 1
+        self.liikumine[0], self.liikumine[1] = 0, 0
 
 def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
     font = pygame.font.Font(None, 100)
@@ -311,7 +331,6 @@ y = (DISPLAY_HEIGHT * 0.5)
 
 def game_loop():
     pygame.mixer.music.set_volume(0.1)
-    score = 0
     pygame.display.set_caption("Maskantje")
     game = True
 
@@ -320,12 +339,14 @@ def game_loop():
     põrand = Platform(generate=True)
     all_sprites_list.add(player, põrand.floortiles, titt1)
     platform_sprites_list.add(põrand.floortiles)
+    enemies_sprites_list.add(titt1)
 
     pygame.key.set_repeat()
     while game:
         gameDisplay.blit(background, (0,0))
         skooritabel("Score:",0,0,100,20,black)
         skoori_number(score)
+        print(score)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game = False
