@@ -286,7 +286,11 @@ def clear_callback(surf, rect):
     color = 255, 0, 0
     surf.fill(color, rect)
 
-
+def uus_level():
+    all_sprites_list.empty()
+    platform_sprites_list.empty()
+    game_loop()
+    
 def game_over():
     font = pygame.font.Font(None, 280)
     text = font.render("Game Over",1,black)
@@ -299,8 +303,8 @@ def game_over():
         gameDisplay.blit(background, (0,0))
         gameDisplay.blit(text, (100, 200))
 # pygame.display.update()
-#  pygame.sprite.Group().clear(gameDisplay, background)
-        nupp("Play again",150,450,350,200,green,bright_green,game_loop)
+# pygame.sprite.Group().clear(gameDisplay, background)
+        nupp("Play again",150,450,350,200,green,bright_green,uus_level)
         nupp("Quit Game!",750,450,400,200,red,bright_red,quit)
         pygame.display.update()
         clock.tick(15)
@@ -337,12 +341,14 @@ def game_loop():
     titt1 = Titt()
     player = Player()
     põrand = Platform(generate=True)
+    print(põrand)
     all_sprites_list.add(player, põrand.floortiles, titt1)
     platform_sprites_list.add(põrand.floortiles)
     enemies_sprites_list.add(titt1)
 
     pygame.key.set_repeat()
     while game:
+        score = 0
         gameDisplay.blit(background, (0,0))
         skooritabel("Score:",0,0,100,20,black)
         skoori_number(score)
@@ -350,6 +356,10 @@ def game_loop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game = False
+        #Kui läheb parealt välja siis teeb uue maailma
+        if player.rect.x == 1280:
+            uus_level()
+            
 
         pygame.event.pump()
         key = pygame.key.get_pressed()
@@ -363,6 +373,7 @@ def game_loop():
             player.liiguparemale()
         if key[K_SPACE]:
             player.peksmine()
+            game_over()
         if key[K_ESCAPE]:
             break
 
