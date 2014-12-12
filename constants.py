@@ -12,7 +12,7 @@ white = (255,255,255)
 black = (0,0,0)
 bright_green = (0,255,0)
 bright_red = (255,0,0)
-
+AQUA =  (0,255,255)
 
 ## DIRECTIONS
 UP = "UP"
@@ -70,10 +70,13 @@ tulnukasvasemale3 = "tulnukas_vasakule3.png"
 taust1 = "background1.png"
 taust2 = "background2.png"
 taust3 = "background3.png"
+backgrounds = [taust1, taust2, taust3]
 
 
 ##tiles and stuff
-gray_brick = "texture_grass_uus.jpg"
+gray_brick = "block64.png"
+grass_brick = "texture_grass.jpg"
+bricks = [gray_brick, grass_brick]
 
 
 #platvormi võimalikud pealmised ruudud

@@ -7,6 +7,7 @@ import pygame
 from pygame.locals import *
 all_sprites_list = pygame.sprite.Group()
 enemies_sprites_list = pygame.sprite.Group()
+to_add_enemies_sprites_list = pygame.sprite.Group()
 platform_sprites_list = pygame.sprite.Group()
 score = 0
 
@@ -15,17 +16,19 @@ score = 0
 def loadImage(imagepath):
     return pygame.image.load(imagepath)
 
-class Block(pygame.sprite.Sprite):
-    def __init__(self, x=0, y=0):
+class Block(pygame.sprite.Sprite ):
+    def __init__(self, x=0, y=0, brick=grass_brick):
         super().__init__()
-        self.image = pygame.image.load(gray_brick)
+        #brick is not used
+        self.image = pygame.image.load(grass_brick)
         self.rect = self.image.get_rect()
         self.image.set_colorkey(WHITE)
         self.rect.x = x
         self.rect.y = y
 
 class Platform(Block):
-    floortiles = []
+    floortiles = pygame.sprite.Group()
+    floortiletype = pygame.image.load(random.choice(bricks))
     def __init__(self, x=0, y=0, generate=False):
         super().__init__()
         if generate:
@@ -35,8 +38,8 @@ class Platform(Block):
         self.generate_platforms(5)
     def generate_floor(self, x=0, y=DISPLAY_HEIGHT):
         for i in range(int(x), int(DISPLAY_WIDTH), self.image.get_size()[0]):
-            tile = Block(x=i, y= y - self.image.get_size()[1])
-            self.floortiles.append(tile)
+            tile = Block(x=i, y= y - self.image.get_size()[1], brick=self.floortiletype)
+            self.floortiles.add(tile)
     def generate_platforms(self, n=1):
         for i in range(n):
             position = random.randint(2,18) *64
@@ -44,9 +47,8 @@ class Platform(Block):
             for coordinates in obstacle:
                 X = coordinates[0] + position
                 Y = coordinates[1] + DISPLAY_HEIGHT-128
-                tile = Block(x= X, y= Y)
-                self.floortiles.append(tile)
-
+                tile = Block(x= X, y= Y, brick=self.floortiletype)
+                self.floortiles.add(tile)
 class Character(pygame.sprite.Sprite):
     ## Textures go here
     jooks_tekstuurid = []
@@ -108,7 +110,6 @@ class Character(pygame.sprite.Sprite):
 
     def check_hyppamine(self):
         self.jumpingTimer += self.jumpingClock.tick()
-        print(self.jumpingTimer)
         if self.jumpingTimer <= self.jumpLength and self.isJumping:
             self.liiguülesse()
         elif self.isJumping == False and self.jumpingTimer != 0:
@@ -160,7 +161,6 @@ class Character(pygame.sprite.Sprite):
             self.liigu()
         self.liikumine[0], self.liikumine[1] = 0, 0
 
-
     def update(self):
         self.updateAnimationType()
         self.check_hyppamine()
@@ -211,10 +211,10 @@ class Titt(AI):
         self.seismine_tekstuurid = beebi_seisab
 
         self.animationLength = 10
-    def check_collision(self):
+    def check_collision(self, playerobj):
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
-            self.liikumine[0] = -self.liikumine[0]
-            self.liikumine[1] = -self.liikumine[1]
+            self.liikumine[0] = -self.liikumine[0]-1
+            self.liikumine[1] = -self.liikumine[1]-10
             self.liigu()
         self.liikumine[0], self.liikumine[1] = 0, 0
 
@@ -222,12 +222,17 @@ class Titt(AI):
         self.setLiikumine(self.getMovement(self.getPlayerPos(playerobj)))
         self.updateAnimationType()
         self.liigu()
-        self.check_collision()
+        self.check_collision(playerobj)
         self.check_hyppamine()
         self.dogravity()
         self.assignImage(self.direction)
 
 class Player(Character):
+    stamina = 100
+    staminaLength = 0
+    staminaReplenishRate = 2
+    staminaBurnRate = 5
+
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load(liigubparemale1)
@@ -240,7 +245,6 @@ class Player(Character):
         self.jooks_tekstuurid = mehike_jookseb
         self.hyppamine_tekstuurid = mehike_hyppab
         self.seismine_tekstuurid = mehike_seisab
-
     def check_collision(self):
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
             self.liikumine[0] = -self.liikumine[0]
@@ -252,26 +256,72 @@ class Player(Character):
             if self.isPunching:
                 global score
                 score += 1
+                for sprite in enemies_sprites_list:
+                    sprite.kill()
         self.liikumine[0], self.liikumine[1] = 0, 0
+
+    def update_stamina(self):
+        if self.isPunching and self.stamina > 0:
+            self.depleteStamina()
+        if not self.isPunching and self.stamina < 100:
+            self.replenishStamina()
+
+    def check_stamina(self):
+        if self.stamina > self.staminaBurnRate:
+            return True
+        else:
+            return False
+
+    def depleteStamina(self):
+        self.stamina -= self.staminaBurnRate
+    def replenishStamina(self):
+        self.stamina += self.staminaReplenishRate
+
+    def drawStaminaRect(self, surface):
+        width = self.stamina*2
+        height = 50
+        pygame.draw.rect(surface, AQUA, (50, 50, self.stamina*2, height), 0)
+        pygame.draw.rect(surface, BLACK, (49, 49, width, height+2), 2)
+
+    def peksmine(self):
+        if self.check_stamina():
+            self.isPunching = True
+        else:
+            self.isPunching = False
+
+    def update(self):
+        self.updateAnimationType()
+        self.check_hyppamine()
+        self.liigu()
+        self.check_collision()
+        self.assignImage(self.direction)
+        self.update_stamina()
+        print(self.stamina)
+        self.isPunching = False
+        self.dogravity()
+        self.drawStaminaRect(gameDisplay)
+
+
 
 def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
     font = pygame.font.Font(None, 100)
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
-    #kui hiirt liigutada siia piirkonda, siis läheb heledamaks
     if x+laius > mouse[0] > x and y+kõrgus > mouse[1] > y:
         pygame.draw.rect(gameDisplay, värv2, (x,y,laius,kõrgus))
         if click[0] == 1 and action != None:
             action()
     else:
         pygame.draw.rect(gameDisplay, värv1, (x,y,laius,kõrgus))
-    #tekst nuppude peal
     smallText = font.render(msg,1,black)
+##    textSurf, textRect = text_objects(msg, smallText) 
+##    textRect.center = ((x+(w/2)), (y+(h/2)))
     gameDisplay.blit(smallText, (x, y+50))
 
 def skoori_number(score):
     font = pygame.font.Font(None, 40)
-    #muudab saadud täisarvu sõneks, muidu ei saa renderida
+    pygame.event.pump()
+    key = pygame.key.get_pressed()
     score = str(score)
     score_text = font.render(score,1,black)
     gameDisplay.blit(score_text, (90, 0))
@@ -281,19 +331,30 @@ def skooritabel(msg,x,y,laius,kõrgus,värv):
     text = font.render(msg,1,black)
     gameDisplay.blit(text, (x, y))
 
+def clear_callback(surf, rect):
+    color = 255, 0, 0
+    surf.fill(color, rect)
+
 def uus_level():
-    #tühjendab maailma
+    for sprite in all_sprites_list:
+        sprite.kill()
+    for sprite in enemies_sprites_list:
+        sprite.kill()
+    for sprite in platform_sprites_list:
+        sprite.kill()
     all_sprites_list.empty()
     platform_sprites_list.empty()
-    enemies_sprites_list.empty()
-    #uuesti käima põhi mängu loop
+    to_add_enemies_sprites_list.add(Titt())
     game_loop()
+
     
 def game_over():
-    #kuvab suurelt teksti "Game Over"
     font = pygame.font.Font(None, 280)
     text = font.render("Game Over",1,black)
     game_over = True
+    global score
+    score = 0
+    background = pygame.image.load(random.choice(backgrounds)).convert()
     while game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -317,45 +378,47 @@ def game_intro():
                 quit()
 
         gameDisplay.blit(background, (0,0))
-        nupp("Start Game!",150,450,400,200,green,bright_green,game_loop)
+        nupp("Start Game!",150,450,400,200,green,bright_green,game)
         nupp("Quit Game!",750,450,400,200,red,bright_red,quit)
         pygame.display.update()
         clock.tick(15)
 
 gameDisplay = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 
-background = pygame.image.load("background1.png").convert()
+
 clock = pygame.time.Clock()
 
 x = (DISPLAY_WIDTH * 0.25)
 y = (DISPLAY_HEIGHT * 0.5)
 
-def game_loop():
-    pygame.mixer.music.set_volume(0.1)
-    pygame.display.set_caption("Maskantje")
-    game = True
 
-    titt1 = Titt()
+def game():
+
+    pygame.mixer.music.set_volume(0.1)
+    pygame.display.set_caption("Koduvägivald")
+    pygame.key.set_repeat()
+    if not game_loop():
+        return False
+
+def game_loop():
+    titt = Titt()
     player = Player()
     põrand = Platform(generate=True)
     print(põrand)
-    all_sprites_list.add(player, põrand.floortiles, titt1)
+    all_sprites_list.add(player, põrand.floortiles, titt) #+to_add_enemies_sprite_list
     platform_sprites_list.add(põrand.floortiles)
-    enemies_sprites_list.add(titt1)
-    pygame.key.set_repeat()
+    enemies_sprites_list.add(titt) #+to_add_enemies_sprite_list
+    background = pygame.image.load(random.choice(backgrounds)).convert()
+    game = True
     while game:
-        score = 0
         gameDisplay.blit(background, (0,0))
         skooritabel("Score:",0,0,100,20,black)
         skoori_number(score)
-        print(score)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game = False
-        #Kui läheb paremalt välja siis teeb uue maailma
-        if player.rect.x == 1280:
-            uus_level()
-            
+        #Kui läheb paremalt välja, siis teeb uue maailma
+
         pygame.event.pump()
         key = pygame.key.get_pressed()
         if key[K_UP]:
@@ -369,15 +432,19 @@ def game_loop():
         if key[K_SPACE]:
             player.peksmine()
         if key[K_ESCAPE]:
-            break
+            game_over()
 
         player.update()
-        titt1.update(player)
+        titt.update(player)
         all_sprites_list.draw(gameDisplay)
         pygame.display.update()
         clock.tick(30)
+        if player.rect.x >= DISPLAY_WIDTH:
+            newLevel = True
+            break
 
-#Mäng käima
+    if newLevel:
+        uus_level()
 pygame.init()
 #Muusika
 pygame.mixer.music.load("Storm, Earth and Fire.mp3")
