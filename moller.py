@@ -258,21 +258,20 @@ def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
     font = pygame.font.Font(None, 100)
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
+    #kui hiirt liigutada siia piirkonda, siis läheb heledamaks
     if x+laius > mouse[0] > x and y+kõrgus > mouse[1] > y:
         pygame.draw.rect(gameDisplay, värv2, (x,y,laius,kõrgus))
         if click[0] == 1 and action != None:
             action()
     else:
         pygame.draw.rect(gameDisplay, värv1, (x,y,laius,kõrgus))
+    #tekst nuppude peal
     smallText = font.render(msg,1,black)
-##    textSurf, textRect = text_objects(msg, smallText) 
-##    textRect.center = ((x+(w/2)), (y+(h/2)))
     gameDisplay.blit(smallText, (x, y+50))
 
 def skoori_number(score):
     font = pygame.font.Font(None, 40)
-    pygame.event.pump()
-    key = pygame.key.get_pressed()
+    #muudab saadud täisarvu sõneks, muidu ei saa renderida
     score = str(score)
     score_text = font.render(score,1,black)
     gameDisplay.blit(score_text, (90, 0))
@@ -282,16 +281,16 @@ def skooritabel(msg,x,y,laius,kõrgus,värv):
     text = font.render(msg,1,black)
     gameDisplay.blit(text, (x, y))
 
-def clear_callback(surf, rect):
-    color = 255, 0, 0
-    surf.fill(color, rect)
-
 def uus_level():
+    #tühjendab maailma
     all_sprites_list.empty()
     platform_sprites_list.empty()
+    enemies_sprites_list.empty()
+    #uuesti käima põhi mängu loop
     game_loop()
     
 def game_over():
+    #kuvab suurelt teksti "Game Over"
     font = pygame.font.Font(None, 280)
     text = font.render("Game Over",1,black)
     game_over = True
@@ -302,8 +301,6 @@ def game_over():
                 quit()
         gameDisplay.blit(background, (0,0))
         gameDisplay.blit(text, (100, 200))
-# pygame.display.update()
-# pygame.sprite.Group().clear(gameDisplay, background)
         nupp("Play again",150,450,350,200,green,bright_green,uus_level)
         nupp("Quit Game!",750,450,400,200,red,bright_red,quit)
         pygame.display.update()
@@ -345,7 +342,6 @@ def game_loop():
     all_sprites_list.add(player, põrand.floortiles, titt1)
     platform_sprites_list.add(põrand.floortiles)
     enemies_sprites_list.add(titt1)
-
     pygame.key.set_repeat()
     while game:
         score = 0
@@ -356,11 +352,10 @@ def game_loop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game = False
-        #Kui läheb parealt välja siis teeb uue maailma
+        #Kui läheb paremalt välja siis teeb uue maailma
         if player.rect.x == 1280:
             uus_level()
             
-
         pygame.event.pump()
         key = pygame.key.get_pressed()
         if key[K_UP]:
@@ -382,6 +377,7 @@ def game_loop():
         pygame.display.update()
         clock.tick(30)
 
+#Mäng käima
 pygame.init()
 #Muusika
 pygame.mixer.music.load("Storm, Earth and Fire.mp3")
