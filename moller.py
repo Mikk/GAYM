@@ -6,7 +6,9 @@ from constants import *
 import pygame
 from pygame.locals import *
 all_sprites_list = pygame.sprite.Group()
+character_sprites_list = pygame.sprite.Group()
 platform_sprites_list = pygame.sprite.Group()
+
 
 ## ABIFUNKTSIOONID
 
@@ -53,10 +55,13 @@ class Character(pygame.sprite.Sprite):
     ###################
     isJumping = False
     isPunching = False
-    jumpingTimer = pygame.time.get_ticks()
+    jumpingClock = pygame.time.Clock()
+    jumpingTimer = jumpingClock.get_time()
+    jumpLength = 500
     direction = UP
     animationClock = pygame.time.Clock()
     animationTimer = animationClock.get_time()
+    animationLength = 120
     imageType = 0 # either 0, 1 or 2
 
     kiirus = 10
@@ -65,6 +70,7 @@ class Character(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.animationClock.tick()
+        self.jumpingClock.tick()
 
     ###LIIKUMINE
 
@@ -72,7 +78,7 @@ class Character(pygame.sprite.Sprite):
         self.rect.y += GRAVITY
         if pygame.sprite.spritecollide(self, platform_sprites_list, False):
             self.rect.y -= GRAVITY
-            self.isJumping = False # to stop jump when collision
+            self.isJumping = False # to stop jump when collision with ground
 
     def liiguvasemale(self):
         self.liikumine[0] += -self.kiirus
@@ -92,16 +98,21 @@ class Character(pygame.sprite.Sprite):
         x, y = self.liikumine[0], self.liikumine[1]
         self.rect.x += x
         self.rect.y += y
+        # print(x,y)
         if(x == 0 and y == 0):
             self.direction = DOWN
     def hyppa(self):
         if self.isJumping == False:
-            self.jumpingTimer = pygame.time.get_ticks()
+            self.jumpingTimer = 0
             self.isJumping = True
 
     def check_hyppamine(self):
-        if pygame.time.get_ticks() - self.jumpingTimer <= 500 and self.isJumping:
+        self.jumpingTimer += self.jumpingClock.tick()
+        print(self.jumpingTimer)
+        if self.jumpingTimer <= self.jumpLength and self.isJumping:
             self.liiguülesse()
+        elif self.isJumping == False and self.jumpingTimer != 0:
+            self.jumpingTimer = 0
 
     ###ANIMATION RELATED
     def assignImage(self, direction):
@@ -123,21 +134,19 @@ class Character(pygame.sprite.Sprite):
 
     def getImage(self, image_list):
         imageType = self.imageType
-        print(imageType)
         while len(image_list) <= imageType:
             imageType -= 1
-        print(image_list, image_list[imageType])
         return image_list[imageType]
 
     def updateAnimationType(self):
         self.animationTimer += self.animationClock.tick()
-        if(self.animationTimer <= 120):
+        if(self.animationTimer <= self.animationLength*1):
             self.imageType = 0
-        elif(self.animationTimer <= 240):
+        elif(self.animationTimer <= self.animationLength*2):
             self.imageType = 1
-        elif(self.animationTimer <= 360):
+        elif(self.animationTimer <= self.animationLength*3):
             self.imageType = 2
-        if(self.animationTimer > 360):
+        if(self.animationTimer > self.animationLength*3):
             self.animationTimer = 0
 
     def peksmine(self):
@@ -153,26 +162,77 @@ class Character(pygame.sprite.Sprite):
 
     def update(self):
         self.updateAnimationType()
+        self.check_hyppamine()
+        self.liigu()
+        self.check_collision()
+        self.assignImage(self.direction)
+        self.isPunching = False
+
+        self.dogravity()
+
+class AI(Character):
+    def __init__(self):
+        super().__init__()
+        self.kiirus = 5
+
+    def getPlayerPos(self, playerobj):
+        x = playerobj.rect.x
+        y = playerobj.rect.y
+        return [x, y]
+
+    def getMovement(self, playercords):
+        player_x, player_y = playercords[0], playercords[1]
+        ai_x, ai_y = self.rect.x, self.rect.y
+        if (ai_x - player_x > 0):
+            self.direction = LEFT
+            return [-self.kiirus, 0]
+        elif (ai_x - player_x < 0):
+            self.direction = RIGHT
+            return [self.kiirus, 0]
+        else:
+            return [0, 0]
+
+    def setLiikumine(self, newliikumine):
+        self.liikumine[0], self.liikumine[1] = newliikumine[0], newliikumine[1]
+
+class Titt(AI):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load(beebi_seisab[0])
+        self.image.set_colorkey(WHITE)
+        self.rect = self.image.get_rect()
+        self.rect.x = (DISPLAY_WIDTH * 0.75)
+        self.rect.y = (DISPLAY_HEIGHT * 0.75)
+
+        ## tekstuurid
+        self.jooks_tekstuurid = beebi_jookseb
+        self.hyppamine_tekstuurid = beebi_jookseb
+        self.seismine_tekstuurid = beebi_seisab
+
+        self.animationLength = 10
+
+    def update(self, playerobj):
+        self.setLiikumine(self.getMovement(self.getPlayerPos(playerobj)))
+        self.updateAnimationType()
         self.liigu()
         self.check_collision()
         self.check_hyppamine()
         self.dogravity()
         self.assignImage(self.direction)
-        self.isPunching = False
 
 class Player(Character):
-
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load(liigubparemale1).convert_alpha()
+        self.image = pygame.image.load(liigubparemale1)
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
+        self.rect.x = (DISPLAY_WIDTH * 0.25)
+        self.rect.y = (DISPLAY_HEIGHT * 0.5)
 
         ## laeb mehikese tekstuurid
         self.jooks_tekstuurid = mehike_jookseb
         self.hyppamine_tekstuurid = mehike_hyppab
         self.seismine_tekstuurid = mehike_seisab
-
 
 def nupp(msg,x,y,laius,kõrgus,värv1,värv2,action=None):
     font = pygame.font.Font(None, 100)
@@ -218,8 +278,8 @@ def game_over():
                 quit()
         gameDisplay.blit(background, (0,0))
         gameDisplay.blit(text, (100, 200))
-   # pygame.display.update()
-  #  pygame.sprite.Group().clear(gameDisplay, background)
+# pygame.display.update()
+#  pygame.sprite.Group().clear(gameDisplay, background)
         nupp("Play again",150,450,350,200,green,bright_green,game_loop)
         nupp("Quit Game!",750,450,400,200,red,bright_red,quit)
         pygame.display.update()
@@ -255,12 +315,11 @@ def game_loop():
     pygame.display.set_caption("Maskantje")
     game = True
 
+    titt1 = Titt()
     player = Player()
     põrand = Platform(generate=True)
-    all_sprites_list.add(player, põrand.floortiles)
+    all_sprites_list.add(player, põrand.floortiles, titt1)
     platform_sprites_list.add(põrand.floortiles)
-    player.rect.x = x
-    player.rect.y = y
 
     pygame.key.set_repeat()
     while game:
@@ -277,15 +336,17 @@ def game_loop():
             player.hyppa()
         if key[K_DOWN]:
             player.liigualla()
-            #all_sprites_list.clear()
         if key[K_LEFT]:
             player.liiguvasemale()
         if key[K_RIGHT]:
             player.liiguparemale()
         if key[K_SPACE]:
             player.peksmine()
+        if key[K_ESCAPE]:
+            break
 
         player.update()
+        titt1.update(player)
         all_sprites_list.draw(gameDisplay)
         pygame.display.update()
         clock.tick(30)
