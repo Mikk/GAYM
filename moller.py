@@ -32,12 +32,12 @@ class Platform(Block):
             self.generate()
     def generate(self):
         self.generate_floor()
-        self.generate_on_platform(5)
-    def generate_platform(self, x=0, y=DISPLAY_HEIGHT):
+        self.generate_platforms(5)
+    def generate_floor(self, x=0, y=DISPLAY_HEIGHT):
         for i in range(int(x), int(DISPLAY_WIDTH), self.image.get_size()[0]):
             tile = Block(x=i, y= y - self.image.get_size()[1])
             self.floortiles.append(tile)
-    def generate_on_floor(self, n=1):
+    def generate_platforms(self, n=1):
         for i in range(n):
             position = random.randint(2,18) *64
             obstacle = random.choice(OBSTACLES)
@@ -203,7 +203,7 @@ class Titt(AI):
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
         self.rect.x = (DISPLAY_WIDTH * 0.75)
-        self.rect.y = (DISPLAY_HEIGHT * 0.75)
+        self.rect.y = (DISPLAY_HEIGHT * 0.5)
 
         ## tekstuurid
         self.jooks_tekstuurid = beebi_jookseb
@@ -233,7 +233,7 @@ class Player(Character):
         self.image = pygame.image.load(liigubparemale1)
         self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
-        self.rect.x = (DISPLAY_WIDTH * 0.25)
+        self.rect.x = (DISPLAY_WIDTH * 0.05)
         self.rect.y = (DISPLAY_HEIGHT * 0.5)
 
         ## laeb mehikese tekstuurid
@@ -373,7 +373,6 @@ def game_loop():
             player.liiguparemale()
         if key[K_SPACE]:
             player.peksmine()
-            game_over()
         if key[K_ESCAPE]:
             break
 
